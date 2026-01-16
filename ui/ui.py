@@ -5,6 +5,7 @@ from .topbar import TopBar
 from .promotion import PromotionUI
 from .game_over import GameOverUI
 from .menu import ask_time_screen
+from ui.menu import ask_game_mode, ask_time_screen
 
 
 class UI:
@@ -87,6 +88,12 @@ class UI:
             self.game_over_ui.draw(text)
 
         pygame.display.update()
+
+    def ask_time_screen(self):
+        return ask_time_screen(self)
+    
+    def ask_game_mode(self):
+        return ask_game_mode(self)
 
     def ask_time_screen(self):
         return ask_time_screen(self)

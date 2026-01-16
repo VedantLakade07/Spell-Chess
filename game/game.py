@@ -6,14 +6,18 @@ from animation import MoveAnimation
 from pgn import PGN
 from rules import Rules, WHITE, BLACK
 
+
 from .state import GameState
 from .input import InputHandler
 from .rules_engine import RulesEngine
+
+from ai_engine import AIEngine
 
 
 class Game:
     def __init__(self):
         pygame.init()
+        self.ai = AIEngine()
 
         self.ui = UI()
         self.clock = ChessClock()
@@ -47,6 +51,23 @@ class Game:
             if self.animation.active:
                 if self.animation.update():
                     self.state.finish_animation()
+
+            # ---------- AI MOVE ----------
+            if (
+                self.state.game_mode == "pvc" and
+                self.state.turn == BLACK and
+                not self.state.animation.active and
+                not self.state.promotion_square and
+                not self.state.game_over
+            ):
+                sr, sc, dr, dc = self.ai.get_move(self.state.board, self.state.turn)
+            
+                piece = self.state.board[sr][sc]
+                self.state.history.append(self.state.snapshot())
+                self.state.pending_move = (sr, sc, dr, dc, piece)
+                self.state.animation.start(sr, sc, dr, dc, piece)
+            
+
 
             # ---------- GAME END CHECK ----------
             if not self.state.promotion_square:

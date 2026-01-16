@@ -47,9 +47,15 @@ class GameState:
         }
 
         # ---- CLOCK ----
-        mode, base, inc = self.ui.ask_time_screen()
-        pygame.event.clear()
-        self.clock.set_mode(mode, base, inc)
+        self.game_mode = self.ui.ask_game_mode()
+        
+        if self.game_mode == "pvc":
+            self.clock.set_mode("none", 0, 0)
+        else:
+            mode, base, inc = self.ui.ask_time_screen()
+            pygame.event.clear()
+            self.clock.set_mode(mode, base, inc)
+        
 
     # -------------------------------------------------
     # SNAPSHOT (UNDO / REDO)

@@ -9,6 +9,11 @@ class InputHandler:
     # ---------------- ENTRY POINT ----------------
 
     def handle_event(self, event):
+        
+        if self.state.game_mode == "pvc" and self.state.turn == BLACK:
+            return
+        
+
         if event.type == pygame.KEYDOWN:
             self.handle_key(event.key)
 

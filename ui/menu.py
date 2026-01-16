@@ -2,6 +2,44 @@ import pygame
 import os
 import sys
 
+
+def ask_game_mode(self):
+    clock = pygame.time.Clock()
+
+    btn_pvp = pygame.Rect(self.WIDTH//2 - 120, 180, 240, 50)
+    btn_pvc = pygame.Rect(self.WIDTH//2 - 120, 260, 240, 50)
+
+    while True:
+        self.WIN.fill((20, 20, 20))
+
+        title = self.BIG.render("Select Game Mode", True, (255,255,255))
+        self.WIN.blit(title, title.get_rect(center=(self.WIDTH//2, 100)))
+
+        pygame.draw.rect(self.WIN, (70,70,70), btn_pvp, border_radius=6)
+        pygame.draw.rect(self.WIN, (70,70,70), btn_pvc, border_radius=6)
+
+        self.WIN.blit(self.FONT.render("Player vs Player", True, (255,255,255)),
+                      self.FONT.render("Player vs Player", True, (255,255,255)).get_rect(center=btn_pvp.center))
+
+        self.WIN.blit(self.FONT.render("Player vs Computer", True, (255,255,255)),
+                      self.FONT.render("Player vs Computer", True, (255,255,255)).get_rect(center=btn_pvc.center))
+
+        pygame.display.update()
+        clock.tick(30)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                raise SystemExit
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if btn_pvp.collidepoint(event.pos):
+                    return "pvp"
+                if btn_pvc.collidepoint(event.pos):
+                    return "pvc"
+
+
+
 def ask_time_screen(self):
     clock = pygame.time.Clock()
 
