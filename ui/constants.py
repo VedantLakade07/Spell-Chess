@@ -1,0 +1,14 @@
+# ui/constants.py
+
+LIGHT = (240, 217, 181)
+DARK = (181, 136, 99)
+
+SELECT_BG = (180, 220, 255)
+SELECT_BORDER = (30, 80, 200)
+MOVE = (100, 220, 120)
+
+TOP_BG = (30, 30, 30)
+BTN_BG = (180, 60, 60)
+BTN_TEXT = (255, 255, 255)
+
+EMPTY = "."
