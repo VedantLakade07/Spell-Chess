@@ -1,18 +1,21 @@
 import pygame
 from rules import Rules, WHITE, BLACK
+from game.spells import SpellSystem
 
 
 class InputHandler:
     def __init__(self, state):
         self.state = state
+        self.pending_spell = None   # "freeze" when targeting
+
 
     # ---------------- ENTRY POINT ----------------
 
     def handle_event(self, event):
-        
+
+        # Block player input during AI turn
         if self.state.game_mode == "pvc" and self.state.turn == BLACK:
             return
-        
 
         if event.type == pygame.KEYDOWN:
             self.handle_key(event.key)
@@ -20,10 +23,10 @@ class InputHandler:
         elif event.type == pygame.MOUSEBUTTONDOWN:
             self.handle_mouse(event.pos)
 
+
     # ---------------- KEYBOARD ----------------
 
     def handle_key(self, key):
-        # Game-over controls
         if self.state.game_over:
             if key == pygame.K_r:
                 self.state.reset()
@@ -42,12 +45,14 @@ class InputHandler:
             self.state.history.append(self.state.snapshot())
             self.state.restore(self.state.redo.pop())
 
+
     # ---------------- MOUSE ----------------
 
     def handle_mouse(self, pos):
         ui = self.state.ui
+        x, y = pos
 
-        # ----- RESIGN (ALWAYS ACTIVE) -----
+        # ----- RESIGN -----
         if ui.resign_rect.collidepoint(pos) and not self.state.game_over:
             self.state.game_over = True
             self.state.result_text = (
@@ -55,23 +60,21 @@ class InputHandler:
             )
             return
 
-        # ----- BLOCK INPUT STATES -----
-                # ----- BLOCK ONLY BOARD INPUT -----
-        if self.state.animation.active:
-            return
-        
-        # Game over: allow only resign / replay / quit
-        if self.state.game_over:
-            return
-        
+        # ----- SPELL BUTTON CLICK -----
+        for spell, rect in ui.spell_rects.items():
+            if rect.collidepoint(pos):
+                if spell == "double_move":
+                    SpellSystem.use_double_move(self.state)
 
-        # Promotion clicks handled in game.py
-        if self.state.promotion_square:
+                elif spell == "spell_2" and self.state.spells[self.state.turn]["spell_2"]:
+                    self.pending_spell = "freeze"
+
+                return
+
+        # ----- BLOCK STATES -----
+        if self.state.animation.active or self.state.game_over or self.state.promotion_square:
             return
 
-        x, y = pos
-
-        # Ignore clicks on top bar
         if y < ui.TOP_BAR:
             return
 
@@ -84,6 +87,13 @@ class InputHandler:
         board = self.state.board
         clicked = board[r][c]
 
+        # ----- SPELL TARGETING -----
+        if self.pending_spell == "freeze":
+            if clicked != "." and not self.is_own(clicked):
+                SpellSystem.use_freeze(self.state, (r, c))
+                self.pending_spell = None
+            return
+
         # ---------- PIECE SELECTED ----------
         if self.state.selected:
             sr, sc = self.state.selected
@@ -95,14 +105,19 @@ class InputHandler:
 
             # Attempt move
             if Rules.is_move_legal(
-                board, sr, sc, r, c,
-                self.state.turn,
-                self.state.last_move
-            ):
+                    board,
+                    sr, sc,
+                    r, c,
+                    self.state.turn,
+                    self.state.last_move,
+                    self.state.castling_rights,
+                    self.state.frozen_square,
+                    self.state.freeze_timer
+                ):
                 self.make_move(sr, sc, r, c)
                 return
 
-            # Invalid click → deselect
+            # Invalid → deselect
             self.state.selected = None
             self.state.legal_moves = []
             return
@@ -110,6 +125,7 @@ class InputHandler:
         # ---------- NO PIECE SELECTED ----------
         if clicked != "." and self.is_own(clicked):
             self.select(r, c)
+
 
     # ---------------- HELPERS ----------------
 
@@ -121,17 +137,25 @@ class InputHandler:
 
     def select(self, r, c):
         self.state.selected = (r, c)
+        board = self.state.board
+
         self.state.legal_moves = [
             (rr, cc)
             for rr in range(8)
             for cc in range(8)
             if Rules.is_move_legal(
-                self.state.board,
-                r, c, rr, cc,
-                self.state.turn,
-                self.state.last_move
-            )
+                    board,
+                    r, c,
+                    rr, cc,
+                    self.state.turn,
+                    self.state.last_move,
+                    self.state.castling_rights,
+                    self.state.frozen_square,
+                    self.state.freeze_timer
+                )
+
         ]
+
 
     def make_move(self, sr, sc, r, c):
         # Save undo snapshot
@@ -140,7 +164,7 @@ class InputHandler:
 
         piece = self.state.board[sr][sc]
 
-        # En passant detection
+        # En passant
         self.state.en_passant_capture = None
         if piece.lower() == "p" and sc != c and self.state.board[r][c] == ".":
             self.state.en_passant_capture = (sr, c)

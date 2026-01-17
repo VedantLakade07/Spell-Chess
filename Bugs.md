@@ -1,2 +1,3 @@
-Undo in pvc not working 
 Add sounds
+Spell history in PGN / replay
+change PGN

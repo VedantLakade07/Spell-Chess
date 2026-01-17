@@ -2,10 +2,13 @@
 import copy
 
 EMPTY = "."
-
 WHITE, BLACK = "white", "black"
 
+
 class Rules:
+
+    # ---------- BASIC HELPERS ----------
+
     @staticmethod
     def in_bounds(r, c):
         return 0 <= r < 8 and 0 <= c < 8
@@ -13,10 +16,6 @@ class Rules:
     @staticmethod
     def enemy(color):
         return BLACK if color == WHITE else WHITE
-
-    @staticmethod
-    def is_white(piece):
-        return piece.isupper()
 
     @staticmethod
     def find_king(board, color):
@@ -27,7 +26,7 @@ class Rules:
                     return r, c
         return None
 
-    # ---------- CHECK / ATTACK ---------- #
+    # ---------- CHECK / ATTACK ----------
 
     @staticmethod
     def is_king_in_check(board, color):
@@ -49,7 +48,7 @@ class Rules:
                     return True
         return False
 
-    # ---------- ATTACK LOGIC ---------- #
+    # ---------- ATTACK LOGIC ----------
 
     @staticmethod
     def ray_clear(board, sr, sc, tr, tc):
@@ -73,7 +72,7 @@ class Rules:
             return dr == direction and abs(dc) == 1
 
         if p == "n":
-            return (abs(dr), abs(dc)) in [(2,1),(1,2)]
+            return (abs(dr), abs(dc)) in [(2, 1), (1, 2)]
 
         if p == "k":
             return max(abs(dr), abs(dc)) == 1
@@ -89,26 +88,44 @@ class Rules:
 
         return False
 
-    # ---------- MOVE VALIDATION ---------- #
+    # ---------- MOVE VALIDATION ----------
 
     @staticmethod
-    def is_move_legal(board, sr, sc, dr, dc, color, last_move):
+    def is_move_legal(
+        board, sr, sc, dr, dc,
+        color, last_move,
+        castling_rights,
+        frozen_square,
+        freeze_timer
+    ):
+
+        # Frozen piece cannot move
+        # ---------- FREEZE ----------
+        if freeze_timer > 0 and (sr, sc) == frozen_square:
+            return False
+
+        
+        
+
+
+
         if not Rules.in_bounds(dr, dc):
             return False
 
         piece = board[sr][sc]
         target = board[dr][dc]
 
-        if target != EMPTY:
-            if piece.isupper() == target.isupper():
-                return False
+        if target != EMPTY and piece.isupper() == target.isupper():
+            return False
 
-        if not Rules.valid_piece_move(board, sr, sc, dr, dc, piece, last_move):
+        if not Rules.valid_piece_move(
+            board, sr, sc, dr, dc, piece, last_move, castling_rights
+        ):
             return False
 
         temp = copy.deepcopy(board)
 
-        # En passant removal
+        # En passant
         if piece.lower() == "p" and sc != dc and board[dr][dc] == EMPTY:
             temp[sr][dc] = EMPTY
 
@@ -118,11 +135,10 @@ class Rules:
         return not Rules.is_king_in_check(temp, color)
 
     @staticmethod
-    def valid_piece_move(board, sr, sc, dr, dc, piece, last_move):
+    def valid_piece_move(board, sr, sc, dr, dc, piece, last_move, castling_rights):
         p = piece.lower()
         drc, dcc = dr - sr, dc - sc
 
-        # ---------- PAWN ----------
         if p == "p":
             direction = -1 if piece.isupper() else 1
             start = 6 if piece.isupper() else 1
@@ -142,50 +158,44 @@ class Rules:
                         return True
             return False
 
-        # ---------- KNIGHT ----------
         if p == "n":
-            return (abs(drc), abs(dcc)) in [(2,1),(1,2)]
+            return (abs(drc), abs(dcc)) in [(2, 1), (1, 2)]
 
-        # ---------- KING ----------
         if p == "k":
-            # Normal king move
             if max(abs(drc), abs(dcc)) == 1:
                 return True
-
-            # Castling must stay on same rank
             if dr != sr:
                 return False
+            return Rules.can_castle(board, sr, sc, dc, piece, castling_rights)
 
-            return Rules.can_castle(board, sr, sc, dc, piece)
-
-        # ---------- ROOK ----------
         if p == "r":
             return (drc == 0 or dcc == 0) and Rules.ray_clear(board, sr, sc, dr, dc)
 
-        # ---------- BISHOP ----------
         if p == "b":
             return abs(drc) == abs(dcc) and Rules.ray_clear(board, sr, sc, dr, dc)
 
-        # ---------- QUEEN ----------
         if p == "q":
             return (drc == 0 or dcc == 0 or abs(drc) == abs(dcc)) and Rules.ray_clear(board, sr, sc, dr, dc)
 
         return False
 
     @staticmethod
-    def can_castle(board, r, c, dc, king):
+    def can_castle(board, r, c, dc, king, castling_rights):
         color = WHITE if king.isupper() else BLACK
+        side = "white" if color == WHITE else "black"
 
         if Rules.is_king_in_check(board, color):
             return False
 
-        # King-side
         if dc - c == 2:
+            if not castling_rights[side]["K"]:
+                return False
             rook_col = 7
             path = [c + 1, c + 2]
 
-        # Queen-side
         elif c - dc == 2:
+            if not castling_rights[side]["Q"]:
+                return False
             rook_col = 0
             path = [c - 1, c - 2, c - 3]
 
@@ -204,10 +214,11 @@ class Rules:
 
         return True
 
-    # ---------- GAME STATE ---------- #
+    # ---------- GAME STATE ----------
 
     @staticmethod
-    def has_legal_move(board, color, last_move):
+    def has_legal_move(board, color, last_move, castling_rights, frozen_square, freeze_timer):
+
         for sr in range(8):
             for sc in range(8):
                 piece = board[sr][sc]
@@ -219,14 +230,31 @@ class Rules:
                     continue
                 for dr in range(8):
                     for dc in range(8):
-                        if Rules.is_move_legal(board, sr, sc, dr, dc, color, last_move):
+                        if Rules.is_move_legal(
+                                board,
+                                sr, sc, dr, dc,
+                                color,
+                                last_move,
+                                castling_rights,
+                                frozen_square,
+                                freeze_timer
+                            ):
                             return True
         return False
 
     @staticmethod
-    def game_state(board, color, last_move):
+    def game_state(board, color, last_move, castling_rights, frozen_square, freeze_timer):
+
         in_check = Rules.is_king_in_check(board, color)
-        has_move = Rules.has_legal_move(board, color, last_move)
+        has_move = has_move = Rules.has_legal_move(
+            board,
+            color,
+            last_move,
+            castling_rights,
+            frozen_square,
+            freeze_timer
+        )
+
 
         if in_check and not has_move:
             return "checkmate"

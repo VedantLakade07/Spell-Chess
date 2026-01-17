@@ -26,9 +26,14 @@ class RulesEngine:
         state = Rules.game_state(
             self.state.board,
             self.state.turn,
-            self.state.last_move
+            self.state.last_move,
+            self.state.castling_rights,
+            self.state.frozen_square,
+            self.state.freeze_timer
         )
-
+        
+        
+        
         if state == "checkmate":
             self.state.result_text = f"CHECKMATE! {Rules.enemy(self.state.turn).capitalize()} wins"
             self.state.game_over = True

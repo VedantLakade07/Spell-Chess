@@ -26,6 +26,13 @@ class GameState:
 
         self.selected = None
         self.legal_moves = []
+        self.frozen_square = None
+        self.freeze_timer = 0
+        self.frozen_square = None
+        self.freeze_timer = 0
+        
+        self.double_move_active = False
+
 
         self.history = []
         self.redo = []
@@ -39,6 +46,26 @@ class GameState:
         self.game_over = False
         self.result_text = ""
         self.pgn_saved = False
+
+        self.spells = {
+            WHITE: {
+                "double_move": True,
+                "spell_2": True,
+                "spell_3": True
+            },
+            BLACK: {
+                "double_move": True,
+                "spell_2": True,
+                "spell_3": True
+            }
+        }
+
+
+
+
+        self.double_move_active = False
+
+
 
         # ---- CASTLING RIGHTS ----
         self.castling_rights = {
@@ -120,7 +147,7 @@ class GameState:
     def finish_animation(self):
         sr, sc, dr, dc, piece = self.pending_move
         mover = self.turn
-
+    
         # ---------- EN PASSANT ----------
         capture = False
         if self.en_passant_capture:
@@ -129,7 +156,7 @@ class GameState:
             capture = True
         else:
             capture = self.board[dr][dc] != "."
-
+    
         # ---------- CASTLING (ROOK MOVE) ----------
         if piece.lower() == "k" and abs(dc - sc) == 2:
             if dc > sc:  # king side
@@ -138,14 +165,24 @@ class GameState:
             else:        # queen side
                 self.board[dr][3] = self.board[dr][0]
                 self.board[dr][0] = "."
-
+    
         # ---------- APPLY MOVE ----------
         self.board[dr][dc] = piece
         self.board[sr][sc] = "."
 
+        # ---------- KING CAPTURE (SPELL RULE) ----------
+        if piece.lower() != "k":
+            captured = self.board[dr][dc]
+            if captured.lower() == "k":
+                self.game_over = True
+                self.result_text = f"{mover.capitalize()} wins (King captured)"
+                self.animation.active = False
+                return
+        
+
         # ---------- UPDATE CASTLING RIGHTS ----------
         self.update_castling_rights(piece, sr, sc)
-
+    
         # ---------- PROMOTION ----------
         if piece.lower() == "p" and (dr == 0 or dr == 7):
             self.promotion_square = (dr, dc)
@@ -153,16 +190,34 @@ class GameState:
         else:
             self.pgn.add(
                 move_to_pgn(sr, sc, dr, dc, piece, capture)
+            
             )
+        
+        
 
+    
+        # ---------- TURN HANDLING (DOUBLE MOVE FIX) ----------
+        if self.double_move_active:
+            # Same player moves again
+            self.double_move_active = False
+        else:
             self.turn = Rules.enemy(mover)
             self.clock.on_move_complete(mover)
 
+    
         # ---------- FINALIZE ----------
         self.last_move = (sr, sc, dr, dc, piece)
         self.pending_move = None
         self.en_passant_capture = None
         self.animation.active = False
+    
+        # ---------- FREEZE TIMER ----------
+        if self.freeze_timer > 0:
+            self.freeze_timer -= 1
+            if self.freeze_timer == 0:
+                self.frozen_square = None
+
+    
 
     # -------------------------------------------------
     # COMPLETE PROMOTION
@@ -184,3 +239,6 @@ class GameState:
         self.promotion_square = None
         self.promotion_color = None
         self.clock.reset_tick()
+
+
+    

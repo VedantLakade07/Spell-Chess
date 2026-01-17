@@ -110,8 +110,10 @@ class Game:
                 self.state.game_over,
                 self.state.result_text,
                 self.animation,
-                self.state.promotion_color
+                self.state.promotion_color,
+                self.state.spells
             )
+            
         
             # Promotion overlay on top (NO EXTRA LOOP)
             if self.state.promotion_square:
