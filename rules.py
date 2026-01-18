@@ -30,8 +30,12 @@ class Rules:
 
     @staticmethod
     def is_king_in_check(board, color):
-        kr, kc = Rules.find_king(board, color)
+        pos = Rules.find_king(board, color)
+        if pos is None:
+            return True  # king is gone → treated as checkmate
+        kr, kc = pos
         return Rules.is_square_attacked(board, kr, kc, Rules.enemy(color))
+
 
     @staticmethod
     def is_square_attacked(board, r, c, attacker):
@@ -244,6 +248,11 @@ class Rules:
 
     @staticmethod
     def game_state(board, color, last_move, castling_rights, frozen_square, freeze_timer):
+    
+        # ---------- KING MISSING ----------
+        if Rules.find_king(board, color) is None:
+            return "checkmate"
+    
 
         in_check = Rules.is_king_in_check(board, color)
         has_move = has_move = Rules.has_legal_move(

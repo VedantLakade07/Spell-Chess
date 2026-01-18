@@ -18,7 +18,8 @@ class BoardRenderer:
         self.top = top_bar
         self.assets = assets
 
-    def draw(self, board, selected, legal, animation):
+    def draw(self, board, selected, legal, animation, frozen_square):
+
         moving_square = None
         moving_piece = None
 
@@ -39,6 +40,20 @@ class BoardRenderer:
                     self.sq
                 )
                 pygame.draw.rect(self.win, color, rect)
+                #
+                # ---------- FROZEN GLOW ----------
+                if frozen_square == (r, c):
+                    glow = pygame.Surface((self.sq, self.sq), pygame.SRCALPHA)
+                    glow.fill((80, 160, 255, 120))  # soft blue glow
+                    self.win.blit(glow, rect.topleft)
+                
+                    pygame.draw.rect(
+                        self.win,
+                        (120, 200, 255),
+                        rect,
+                        3
+                    )
+                
 
                 # -------- SELECTED SQUARE --------
                 if selected == (r, c):

@@ -111,8 +111,10 @@ class Game:
                 self.state.result_text,
                 self.animation,
                 self.state.promotion_color,
-                self.state.spells
+                self.state.spells,
+                self.state.frozen_square
             )
+            
             
         
             # Promotion overlay on top (NO EXTRA LOOP)

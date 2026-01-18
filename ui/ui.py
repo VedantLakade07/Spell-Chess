@@ -99,13 +99,15 @@ class UI:
         text,
         animation,
         promotion_color,
-        spells
+        spells,
+        frozen_square
     ):
         self.WIN.fill((15, 15, 15))
 
         # Board & UI
         self.topbar.draw(clock, turn)
-        self.board.draw(board, selected, legal, animation)
+        self.board.draw(board, selected, legal, animation, frozen_square)
+
 
         # Spell panel
         self.draw_spells(spells, turn)
