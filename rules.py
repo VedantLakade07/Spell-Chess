@@ -100,12 +100,17 @@ class Rules:
         color, last_move,
         castling_rights,
         frozen_square,
-        freeze_timer
+        freeze_timer,
+        swap_bishop_square
     ):
 
         # Frozen piece cannot move
         # ---------- FREEZE ----------
-        if freeze_timer > 0 and (sr, sc) == frozen_square:
+        if (
+            freeze_timer > 0
+            and frozen_square is not None
+            and (sr, sc) == frozen_square
+        ):
             return False
 
         
@@ -123,7 +128,7 @@ class Rules:
             return False
 
         if not Rules.valid_piece_move(
-            board, sr, sc, dr, dc, piece, last_move, castling_rights
+            board, sr, sc, dr, dc, piece, last_move, castling_rights, swap_bishop_square
         ):
             return False
 
@@ -136,10 +141,15 @@ class Rules:
         temp[dr][dc] = temp[sr][sc]
         temp[sr][sc] = EMPTY
 
+        # If king is captured, allow move (game will end immediately)
+        if Rules.find_king(temp, color) is None:
+            return True
+
         return not Rules.is_king_in_check(temp, color)
 
+
     @staticmethod
-    def valid_piece_move(board, sr, sc, dr, dc, piece, last_move, castling_rights):
+    def valid_piece_move(board, sr, sc, dr, dc, piece, last_move, castling_rights, swap_bishop_square):
         p = piece.lower()
         drc, dcc = dr - sr, dc - sc
 
@@ -176,7 +186,11 @@ class Rules:
             return (drc == 0 or dcc == 0) and Rules.ray_clear(board, sr, sc, dr, dc)
 
         if p == "b":
+            if swap_bishop_square == (sr, sc):
+                return max(abs(drc), abs(dcc)) == 1
             return abs(drc) == abs(dcc) and Rules.ray_clear(board, sr, sc, dr, dc)
+
+
 
         if p == "q":
             return (drc == 0 or dcc == 0 or abs(drc) == abs(dcc)) and Rules.ray_clear(board, sr, sc, dr, dc)
@@ -221,7 +235,7 @@ class Rules:
     # ---------- GAME STATE ----------
 
     @staticmethod
-    def has_legal_move(board, color, last_move, castling_rights, frozen_square, freeze_timer):
+    def has_legal_move(board, color, last_move, castling_rights, frozen_square, freeze_timer,swap_bishop_square):
 
         for sr in range(8):
             for sc in range(8):
@@ -241,18 +255,19 @@ class Rules:
                                 last_move,
                                 castling_rights,
                                 frozen_square,
-                                freeze_timer
+                                freeze_timer,
+                                swap_bishop_square
                             ):
                             return True
         return False
 
     @staticmethod
-    def game_state(board, color, last_move, castling_rights, frozen_square, freeze_timer):
-    
+    def game_state(board, color, last_move, castling_rights, frozen_square, freeze_timer,swap_bishop_square):
+
         # ---------- KING MISSING ----------
         if Rules.find_king(board, color) is None:
             return "checkmate"
-    
+
 
         in_check = Rules.is_king_in_check(board, color)
         has_move = has_move = Rules.has_legal_move(
@@ -261,7 +276,8 @@ class Rules:
             last_move,
             castling_rights,
             frozen_square,
-            freeze_timer
+            freeze_timer,
+            swap_bishop_square
         )
 
 

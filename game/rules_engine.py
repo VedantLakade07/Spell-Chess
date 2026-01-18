@@ -29,7 +29,8 @@ class RulesEngine:
             self.state.last_move,
             self.state.castling_rights,
             self.state.frozen_square,
-            self.state.freeze_timer
+            self.state.freeze_timer,
+            self.state.swap_bishop_square
         )
         
         

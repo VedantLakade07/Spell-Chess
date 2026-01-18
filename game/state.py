@@ -7,6 +7,9 @@ from .board import init_board
 
 class GameState:
     def __init__(self, ui, clock, animation, pgn):
+
+        self.swap_bishop_square = None
+
         self.ui = ui
         self.clock = clock
         self.animation = animation
@@ -167,17 +170,19 @@ class GameState:
                 self.board[dr][0] = "."
     
         # ---------- APPLY MOVE ----------
+        # ---------- CAPTURE DETECTION ----------
+        captured_piece = self.board[dr][dc]
+        
+        # ---------- APPLY MOVE ----------
         self.board[dr][dc] = piece
         self.board[sr][sc] = "."
-
-        # ---------- KING CAPTURE (SPELL RULE) ----------
-        if piece.lower() != "k":
-            captured = self.board[dr][dc]
-            if captured.lower() == "k":
-                self.game_over = True
-                self.result_text = f"{mover.capitalize()} wins (King captured)"
-                self.animation.active = False
-                return
+        
+        # ---------- KING CAPTURE ----------
+        if captured_piece.lower() == "k":
+            self.game_over = True
+            self.result_text = f"{mover.capitalize()} wins (King captured)"
+            self.animation.active = False
+            return
         
 
         # ---------- UPDATE CASTLING RIGHTS ----------
@@ -197,12 +202,13 @@ class GameState:
 
     
         # ---------- TURN HANDLING (DOUBLE MOVE FIX) ----------
+        # ---------- TURN HANDLING ----------
         if self.double_move_active:
-            # Same player moves again
             self.double_move_active = False
         else:
             self.turn = Rules.enemy(mover)
             self.clock.on_move_complete(mover)
+
 
     
         # ---------- FINALIZE ----------
@@ -216,6 +222,10 @@ class GameState:
             self.freeze_timer -= 1
             if self.freeze_timer == 0:
                 self.frozen_square = None
+
+        #--------SWAP------------------
+        if self.swap_bishop_square == (sr, sc):
+            self.swap_bishop_square = None
 
     
 

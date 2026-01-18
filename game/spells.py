@@ -36,3 +36,12 @@ class SpellSystem:
         state.freeze_timer = 3      # ❄️ freeze for 2 moves
         spells["spell_2"] = False
     
+
+    
+    @staticmethod
+    def use_swap(state):
+        spells = state.spells[state.turn]
+        if not spells["spell_3"]:
+            return
+
+        state.swap_bishop_square = "awaiting_selection"

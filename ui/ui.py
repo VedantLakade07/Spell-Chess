@@ -142,7 +142,7 @@ class UI:
         data = [
             ("double_move", "Double Move"),
             ("spell_2", "Freeze"),
-            ("spell_3", "Spell 3")
+            ("spell_3", "Swap")
         ]
         
 

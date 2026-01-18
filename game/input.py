@@ -47,6 +47,7 @@ class InputHandler:
 
 
     # ---------------- MOUSE ----------------
+    #
 
     def handle_mouse(self, pos):
         ui = self.state.ui
@@ -63,13 +64,19 @@ class InputHandler:
         # ----- SPELL BUTTON CLICK -----
         for spell, rect in ui.spell_rects.items():
             if rect.collidepoint(pos):
+            
                 if spell == "double_move":
                     SpellSystem.use_double_move(self.state)
+                    return
 
-                elif spell == "spell_2" and self.state.spells[self.state.turn]["spell_2"]:
+                if spell == "spell_2" and self.state.spells[self.state.turn]["spell_2"]:
                     self.pending_spell = "freeze"
+                    return
 
-                return
+                if spell == "spell_3" and self.state.spells[self.state.turn]["spell_3"]:
+                    self.pending_spell = "swap"
+                    return
+
 
         # ----- BLOCK STATES -----
         if self.state.animation.active or self.state.game_over or self.state.promotion_square:
@@ -94,6 +101,15 @@ class InputHandler:
                 self.pending_spell = None
             return
 
+
+
+        if self.pending_spell == "swap":
+            if clicked.lower() == "b" and self.is_own(clicked):
+                self.state.swap_bishop_square = (r, c)
+                self.state.spells[self.state.turn]["spell_3"] = False
+                self.pending_spell = None
+            return
+
         # ---------- PIECE SELECTED ----------
         if self.state.selected:
             sr, sc = self.state.selected
@@ -112,7 +128,8 @@ class InputHandler:
                     self.state.last_move,
                     self.state.castling_rights,
                     self.state.frozen_square,
-                    self.state.freeze_timer
+                    self.state.freeze_timer,
+                    self.state.swap_bishop_square
                 ):
                 self.make_move(sr, sc, r, c)
                 return
@@ -151,7 +168,8 @@ class InputHandler:
                     self.state.last_move,
                     self.state.castling_rights,
                     self.state.frozen_square,
-                    self.state.freeze_timer
+                    self.state.freeze_timer,
+                    self.state.swap_bishop_square
                 )
 
         ]
