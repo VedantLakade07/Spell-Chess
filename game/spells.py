@@ -12,7 +12,8 @@ class SpellSystem:
     
         spells["double_move"] = False
         state.double_move_active = True
-    
+        state.pgn.add_spell("DoubleMove")
+
 
 
     @staticmethod
@@ -35,9 +36,10 @@ class SpellSystem:
         state.frozen_square = (r, c)
         state.freeze_timer = 3      # ❄️ freeze for 2 moves
         spells["spell_2"] = False
+        state.pgn.add_spell("Freeze", (r, c))
     
 
-    
+
     @staticmethod
     def use_swap(state):
         spells = state.spells[state.turn]

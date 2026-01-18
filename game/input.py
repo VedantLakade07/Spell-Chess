@@ -107,7 +107,9 @@ class InputHandler:
             if clicked.lower() == "b" and self.is_own(clicked):
                 self.state.swap_bishop_square = (r, c)
                 self.state.spells[self.state.turn]["spell_3"] = False
+                self.state.pgn.add_spell("Swap Bishop", (r, c))
                 self.pending_spell = None
+                
             return
 
         # ---------- PIECE SELECTED ----------
