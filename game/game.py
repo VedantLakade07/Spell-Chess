@@ -102,18 +102,20 @@ class Game:
 
             # ---------- DRAW ----------
             self.ui.draw(
-            self.state.board,
-            self.state.selected,
-            self.state.legal_moves,
-            self.clock,
-            self.state.turn,
-            self.state.game_over,
-            self.state.result_text,
-            self.animation,
-            self.state.promotion_color,
-            self.state.spells,
-            self.state.frozen_square
-        )
+                self.state.board,
+                self.state.selected,
+                self.state.legal_moves,
+                self.clock,
+                self.state.turn,
+                self.state.game_over,
+                self.state.result_text,
+                self.animation,
+                self.state.promotion_color,
+                self.state.spells,
+                self.state.frozen_square,
+                self.state.spell_3_active
+            )
+
 
             
             
@@ -131,9 +133,11 @@ class Game:
                     animation=self.state.animation,
                     promotion_color=self.state.promotion_color,
                     spells=self.state.spells,
-                    frozen_square=self.state.frozen_square
+                    frozen_square=self.state.frozen_square,
+                    spell_3_active=self.state.spell_3_active
                 )
-            
+                
+
 
     # -------------------------------------------------
     # PROMOTION HANDLING

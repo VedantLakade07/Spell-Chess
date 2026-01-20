@@ -30,8 +30,11 @@ class RulesEngine:
             self.state.castling_rights,
             self.state.frozen_square,
             self.state.freeze_timer,
-            self.state.swap_bishop_square
+            self.state.swap_bishop_square,
+            self.state.bishop_any_direction,
+            self.state.queen_knight_move
         )
+        
         
         
         

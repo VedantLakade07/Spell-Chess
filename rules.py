@@ -101,7 +101,9 @@ class Rules:
         castling_rights,
         frozen_square,
         freeze_timer,
-        swap_bishop_square
+        swap_bishop_square,
+        bishop_any_direction=False,
+        queen_knight_move=False
     ):
 
         # Frozen piece cannot move
@@ -128,8 +130,14 @@ class Rules:
             return False
 
         if not Rules.valid_piece_move(
-            board, sr, sc, dr, dc, piece, last_move, castling_rights, swap_bishop_square
+            board, sr, sc, dr, dc,
+            piece, last_move,
+            castling_rights,
+            swap_bishop_square,
+            bishop_any_direction,
+            queen_knight_move
         ):
+
             return False
 
         temp = copy.deepcopy(board)
@@ -149,7 +157,15 @@ class Rules:
 
 
     @staticmethod
-    def valid_piece_move(board, sr, sc, dr, dc, piece, last_move, castling_rights, swap_bishop_square):
+    def valid_piece_move(
+        board, sr, sc, dr, dc,
+        piece, last_move,
+        castling_rights,
+        swap_bishop_square,
+        bishop_any_direction=False,
+        queen_knight_move=False
+    ):
+
         p = piece.lower()
         drc, dcc = dr - sr, dc - sc
 
@@ -186,14 +202,26 @@ class Rules:
             return (drc == 0 or dcc == 0) and Rules.ray_clear(board, sr, sc, dr, dc)
 
         if p == "b":
-            if swap_bishop_square == (sr, sc):
+            # Spell 3 OR old swap-bishop logic
+            if bishop_any_direction or swap_bishop_square == (sr, sc):
                 return max(abs(drc), abs(dcc)) == 1
+
             return abs(drc) == abs(dcc) and Rules.ray_clear(board, sr, sc, dr, dc)
 
 
 
+
         if p == "q":
-            return (drc == 0 or dcc == 0 or abs(drc) == abs(dcc)) and Rules.ray_clear(board, sr, sc, dr, dc)
+            # Normal queen move
+            if (drc == 0 or dcc == 0 or abs(drc) == abs(dcc)) and Rules.ray_clear(board, sr, sc, dr, dc):
+                return True
+
+            # Spell 3: Queen moves like knight
+            if queen_knight_move:
+                return (abs(drc), abs(dcc)) in [(2, 1), (1, 2)]
+
+            return False
+
 
         return False
 
@@ -235,7 +263,16 @@ class Rules:
     # ---------- GAME STATE ----------
 
     @staticmethod
-    def has_legal_move(board, color, last_move, castling_rights, frozen_square, freeze_timer,swap_bishop_square):
+    def has_legal_move(
+        board, color, last_move,
+        castling_rights,
+        frozen_square,
+        freeze_timer,
+        swap_bishop_square,
+        bishop_any_direction=False,
+        queen_knight_move=False
+    ):
+
 
         for sr in range(8):
             for sc in range(8):
@@ -249,20 +286,32 @@ class Rules:
                 for dr in range(8):
                     for dc in range(8):
                         if Rules.is_move_legal(
-                                board,
-                                sr, sc, dr, dc,
-                                color,
-                                last_move,
-                                castling_rights,
-                                frozen_square,
-                                freeze_timer,
-                                swap_bishop_square
-                            ):
+                            board,
+                            sr, sc, dr, dc,
+                            color,
+                            last_move,
+                            castling_rights,
+                            frozen_square,
+                            freeze_timer,
+                            swap_bishop_square,
+                            bishop_any_direction,
+                            queen_knight_move
+                        ):
+
                             return True
         return False
 
     @staticmethod
-    def game_state(board, color, last_move, castling_rights, frozen_square, freeze_timer,swap_bishop_square):
+    def game_state(
+        board, color, last_move,
+        castling_rights,
+        frozen_square,
+        freeze_timer,
+        swap_bishop_square,
+        bishop_any_direction=False,
+        queen_knight_move=False
+    ):
+
 
         # ---------- KING MISSING ----------
         if Rules.find_king(board, color) is None:
@@ -270,15 +319,18 @@ class Rules:
 
 
         in_check = Rules.is_king_in_check(board, color)
-        has_move = has_move = Rules.has_legal_move(
+        has_move = Rules.has_legal_move(
             board,
             color,
             last_move,
             castling_rights,
             frozen_square,
             freeze_timer,
-            swap_bishop_square
+            swap_bishop_square,
+            bishop_any_direction,
+            queen_knight_move
         )
+
 
 
         if in_check and not has_move:

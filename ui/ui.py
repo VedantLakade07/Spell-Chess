@@ -100,8 +100,10 @@ class UI:
         animation,
         promotion_color,
         spells,
-        frozen_square
+        frozen_square,
+        spell_3_active
     ):
+
         self.WIN.fill((15, 15, 15))
 
         # Board & UI
@@ -110,7 +112,8 @@ class UI:
 
 
         # Spell panel
-        self.draw_spells(spells, turn)
+        self.draw_spells(spells, turn, spell_3_active)
+
 
         # Promotion
         if promotion_color:
@@ -124,7 +127,8 @@ class UI:
 
     # -------- SPELL PANEL --------
 
-    def draw_spells(self, spells, turn):
+    def draw_spells(self, spells, turn, spell_3_active):
+
         self.spell_rects.clear()
 
         panel_x = self.BOARD_SIZE + 10

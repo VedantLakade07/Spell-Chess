@@ -74,8 +74,9 @@ class InputHandler:
                     return
 
                 if spell == "spell_3" and self.state.spells[self.state.turn]["spell_3"]:
-                    self.pending_spell = "swap"
+                    SpellSystem.use_spell_3(self.state)
                     return
+
 
 
         # ----- BLOCK STATES -----
@@ -103,14 +104,6 @@ class InputHandler:
 
 
 
-        if self.pending_spell == "swap":
-            if clicked.lower() == "b" and self.is_own(clicked):
-                self.state.swap_bishop_square = (r, c)
-                self.state.spells[self.state.turn]["spell_3"] = False
-                self.state.pgn.add_spell("Swap Bishop", (r, c))
-                self.pending_spell = None
-                
-            return
 
         # ---------- PIECE SELECTED ----------
         if self.state.selected:
@@ -123,16 +116,19 @@ class InputHandler:
 
             # Attempt move
             if Rules.is_move_legal(
-                    board,
-                    sr, sc,
-                    r, c,
-                    self.state.turn,
-                    self.state.last_move,
-                    self.state.castling_rights,
-                    self.state.frozen_square,
-                    self.state.freeze_timer,
-                    self.state.swap_bishop_square
-                ):
+                board,
+                sr, sc,
+                r, c,
+                self.state.turn,
+                self.state.last_move,
+                self.state.castling_rights,
+                self.state.frozen_square,
+                self.state.freeze_timer,
+                self.state.swap_bishop_square,
+                self.state.bishop_any_direction,
+                self.state.queen_knight_move
+            ):
+
                 self.make_move(sr, sc, r, c)
                 return
 
@@ -163,16 +159,19 @@ class InputHandler:
             for rr in range(8)
             for cc in range(8)
             if Rules.is_move_legal(
-                    board,
-                    r, c,
-                    rr, cc,
-                    self.state.turn,
-                    self.state.last_move,
-                    self.state.castling_rights,
-                    self.state.frozen_square,
-                    self.state.freeze_timer,
-                    self.state.swap_bishop_square
-                )
+                board,
+                r, c,
+                rr, cc,
+                self.state.turn,
+                self.state.last_move,
+                self.state.castling_rights,
+                self.state.frozen_square,
+                self.state.freeze_timer,
+                self.state.swap_bishop_square,
+                self.state.bishop_any_direction,
+                self.state.queen_knight_move
+            )
+            
 
         ]
 

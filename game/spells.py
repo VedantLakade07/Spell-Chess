@@ -9,11 +9,10 @@ class SpellSystem:
         spells = state.spells[state.turn]
         if not spells["double_move"]:
             return
-    
+
         spells["double_move"] = False
         state.double_move_active = True
         state.pgn.add_spell("DoubleMove")
-
 
 
     @staticmethod
@@ -21,29 +20,34 @@ class SpellSystem:
         spells = state.spells[state.turn]
         if not spells["spell_2"]:
             return
-    
+
         r, c = pos
         piece = state.board[r][c]
-    
+
         if piece == ".":
             return
-    
+
         if state.turn == WHITE and piece.isupper():
             return
         if state.turn == BLACK and piece.islower():
             return
-    
+
         state.frozen_square = (r, c)
-        state.freeze_timer = 3      # ❄️ freeze for 2 moves
+        state.freeze_timer = 3
         spells["spell_2"] = False
         state.pgn.add_spell("Freeze", (r, c))
-    
 
 
     @staticmethod
-    def use_swap(state):
+    def use_spell_3(state):
         spells = state.spells[state.turn]
         if not spells["spell_3"]:
             return
-
-        state.swap_bishop_square = "awaiting_selection"
+    
+        state.bishop_any_direction = True
+        state.queen_knight_move = True
+        state.spell_3_active = True
+    
+        spells["spell_3"] = False
+        state.pgn.add_spell("ChaosMove")
+    

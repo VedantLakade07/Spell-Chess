@@ -49,6 +49,11 @@ class GameState:
         self.game_over = False
         self.result_text = ""
         self.pgn_saved = False
+        # --- SPELL 3 FLAGS ---
+        self.bishop_any_direction = False
+        self.queen_knight_move = False
+        self.spell_3_active = False
+
 
         self.spells = {
             WHITE: {
@@ -198,7 +203,13 @@ class GameState:
             
             )
         
-        
+        # ---------- SPELL 3 RESET (ONE MOVE ONLY) ----------
+        ######################
+        if self.spell_3_active:
+            self.bishop_any_direction = False
+            self.queen_knight_move = False
+            self.spell_3_active = False
+
 
     
         # ---------- TURN HANDLING (DOUBLE MOVE FIX) ----------
