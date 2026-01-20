@@ -102,34 +102,37 @@ class Game:
 
             # ---------- DRAW ----------
             self.ui.draw(
-                self.state.board,
-                self.state.selected,
-                self.state.legal_moves,
-                self.clock,
-                self.state.turn,
-                self.state.game_over,
-                self.state.result_text,
-                self.animation,
-                self.state.promotion_color,
-                self.state.spells,
-                self.state.frozen_square
-            )
+            self.state.board,
+            self.state.selected,
+            self.state.legal_moves,
+            self.clock,
+            self.state.turn,
+            self.state.game_over,
+            self.state.result_text,
+            self.animation,
+            self.state.promotion_color,
+            self.state.spells,
+            self.state.frozen_square
+        )
+
             
             
         
             # Promotion overlay on top (NO EXTRA LOOP)
             if self.state.promotion_square:
                 self.ui.draw(
-                board=self.state.board,
-                selected=self.state.selected,
-                legal=self.state.legal_moves,
-                clock=self.clock,
-                turn=self.state.turn,
-                game_over=self.state.game_over,
-                text=self.state.result_text,
-                animation=self.state.animation,
-                promotion_color=self.state.promotion_color
-            )
+                    board=self.state.board,
+                    selected=self.state.selected,
+                    legal=self.state.legal_moves,
+                    clock=self.clock,
+                    turn=self.state.turn,
+                    game_over=self.state.game_over,
+                    text=self.state.result_text,
+                    animation=self.state.animation,
+                    promotion_color=self.state.promotion_color,
+                    spells=self.state.spells,
+                    frozen_square=self.state.frozen_square
+                )
             
 
     # -------------------------------------------------
