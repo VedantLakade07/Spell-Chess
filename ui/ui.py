@@ -146,7 +146,7 @@ class UI:
         data = [
             ("double_move", "Double Move"),
             ("spell_2", "Freeze"),
-            ("spell_3", "Swap")
+            ("spell_3", "ChaosMove")
         ]
         
 
