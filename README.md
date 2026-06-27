@@ -32,4 +32,5 @@ A fun twist on classic chess where you can use powerful spells to outplay your o
 
 ---
 
-game is created by python and pygame
+game is created in python and pygame
+vide-coded
